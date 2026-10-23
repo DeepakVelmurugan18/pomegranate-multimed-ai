@@ -4,3 +4,4 @@ torchvision>=0.15.0
 pillow>=9.5.0
 opencv-python-headless>=4.7.0.72
 numpy>=1.24.0
+gradio>=4.0.0

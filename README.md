@@ -3,8 +3,9 @@ title: Pomegranate-MultiMed AI
 emoji: 🌿
 colorFrom: green
 colorTo: red
-sdk: docker
-app_port: 8080
+sdk: gradio
+sdk_version: 4.44.0
+app_file: app.py
 pinned: false
 license: mit
 short_description: Multimodal Transformer & XAI Pomegranate Disease Diagnosis
@@ -33,25 +34,4 @@ An **Explainable Multimodal Transformer Framework with Selective GAN Augmentatio
   - 🔴 Cercospora (*Cercospora punicae*)
 - **Level 3 Lesion-Burden Severity Grading**: Quantitative surface lesion proxy ($S < 10\%$ Low, $10-25\%$ Moderate, $>25\%$ Severe).
 - **Explainable AI (XAI)**: Dual-branch attention attribution heatmaps highlighting necrotic margins.
-- **Phytosanitary PDF Diagnostic Report**: Official laboratory certificate with ICAR/NRCP reporting standards, candidate probability breakdown, agronomic prescriptions, and one-click PDF generation.
-
----
-
-## 🚀 Live Cloud Deployment via Docker
-
-This space is built directly using the included [`Dockerfile`](Dockerfile):
-```dockerfile
-FROM python:3.10-slim
-...
-EXPOSE 8080
-CMD ["python", "app/server.py"]
-```
-
-### Local Testing
-```bash
-git clone https://huggingface.co/spaces/<username>/pomegranate-multimed-ai
-cd pomegranate-multimed-ai
-python -m pip install -r requirements.txt
-python app/server.py 8080
-```
-Visit `http://localhost:8080`.
+- **Phytosanitary PDF Diagnostic Report**: Official laboratory certificate with ICAR/NRCP reporting standards, candidate probability breakdown, agronomic prescriptions, and printable report format.
