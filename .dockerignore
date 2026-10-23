@@ -1,0 +1,13 @@
+# Docker ignore file
+data/raw/
+data/processed/
+outputs/transformer/cache/
+outputs/gan/
+.git/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+venv/
+.venv/

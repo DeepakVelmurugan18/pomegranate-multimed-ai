@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  pomegranate-multimed-ai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: pomegranate-multimed-ai:latest
+    container_name: pomegranate-multimed-ai
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - HOST=0.0.0.0
+    restart: unless-stopped

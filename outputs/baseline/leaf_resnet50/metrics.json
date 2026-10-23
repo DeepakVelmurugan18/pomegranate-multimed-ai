@@ -1,0 +1,29 @@
+{
+    "experiment_id": "E1-L",
+    "modality": "leaf",
+    "model_architecture": "ResNet50",
+    "dataset_size": {
+        "train": 29351,
+        "validation": 6257,
+        "test": 6267
+    },
+    "training_time_minutes": 11.64,
+    "inference_latency_ms_per_sample": 60.88,
+    "parameter_count_millions": 23.52,
+    "trainable_parameter_count_millions": 0.0102,
+    "test_performance": {
+        "accuracy": 0.7003,
+        "macro_precision": 0.7165,
+        "macro_recall": 0.7226,
+        "macro_f1": 0.7184,
+        "per_class_f1": {
+            "Healthy": 0.9906,
+            "Alternaria": 0.5504,
+            "Anthracnose": 0.5321,
+            "Bacterial Blight": 0.5738,
+            "Cercospora": 0.945
+        }
+    },
+    "best_val_macro_f1": 0.7252,
+    "device_used": "cpu"
+}

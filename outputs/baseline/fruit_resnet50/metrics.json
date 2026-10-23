@@ -1,0 +1,29 @@
+{
+    "experiment_id": "E1-F",
+    "modality": "fruit",
+    "model_architecture": "ResNet50",
+    "dataset_size": {
+        "train": 3528,
+        "validation": 787,
+        "test": 784
+    },
+    "training_time_minutes": 271.76,
+    "inference_latency_ms_per_sample": 115.69,
+    "parameter_count_millions": 23.52,
+    "trainable_parameter_count_millions": 0.0102,
+    "test_performance": {
+        "accuracy": 0.9592,
+        "macro_precision": 0.9526,
+        "macro_recall": 0.9561,
+        "macro_f1": 0.954,
+        "per_class_f1": {
+            "Healthy": 0.9934,
+            "Alternaria": 0.9458,
+            "Anthracnose": 0.9625,
+            "Bacterial Blight": 0.9191,
+            "Cercospora": 0.9488
+        }
+    },
+    "best_val_macro_f1": 0.9681,
+    "device_used": "cpu"
+}

@@ -1,0 +1,15 @@
+# Git ignore file for Pomegranate-MultiMed AI
+data/raw/
+data/processed/
+outputs/transformer/cache/
+outputs/gan/
+outputs/reports/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
