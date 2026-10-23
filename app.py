@@ -49,10 +49,23 @@ DISEASE_INFO = {
     }
 }
 
-# Load Models
-def load_checkpoint(checkpoint_path):
+# Model Weights Configuration
+FRUIT_WEIGHTS_URL = "https://raw.githubusercontent.com/DeepakVelmurugan18/pomegranate-multimed-ai/main/outputs/baseline/fruit_resnet50/best_model.pth"
+LEAF_WEIGHTS_URL = "https://raw.githubusercontent.com/DeepakVelmurugan18/pomegranate-multimed-ai/main/outputs/baseline/leaf_resnet50/best_model.pth"
+
+def load_checkpoint(checkpoint_path, github_url):
     model = models.resnet50(weights=None)
     model.fc = torch.nn.Linear(model.fc.in_features, 5)
+
+    if not checkpoint_path.exists():
+        try:
+            checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+            print(f" -> Downloading model checkpoint from GitHub: {checkpoint_path.name}...")
+            torch.hub.download_url_to_file(github_url, str(checkpoint_path), progress=False)
+            print(f" -> Download completed successfully: {checkpoint_path.name}")
+        except Exception as e:
+            print(f" -> Auto-download note: {e}")
+
     if checkpoint_path.exists():
         try:
             model.load_state_dict(torch.load(checkpoint_path, map_location='cpu'))
@@ -62,8 +75,8 @@ def load_checkpoint(checkpoint_path):
     model.eval()
     return model
 
-FRUIT_MODEL = load_checkpoint(OUTPUTS_DIR / "baseline/fruit_resnet50/best_model.pth")
-LEAF_MODEL = load_checkpoint(OUTPUTS_DIR / "baseline/leaf_resnet50/best_model.pth")
+FRUIT_MODEL = load_checkpoint(OUTPUTS_DIR / "baseline/fruit_resnet50/best_model.pth", FRUIT_WEIGHTS_URL)
+LEAF_MODEL = load_checkpoint(OUTPUTS_DIR / "baseline/leaf_resnet50/best_model.pth", LEAF_WEIGHTS_URL)
 
 EVAL_TF = T.Compose([
     T.Resize((224, 224)),
