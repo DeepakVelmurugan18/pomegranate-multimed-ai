@@ -120,26 +120,76 @@ def parse_b64_image(b64_str):
 
     raise ValueError("Could not decode image file from uploaded data.")
 
-def generate_heatmap_overlay(img_pil, seed_val=42):
-    """Generates synthetic XAI attention attribution heatmap overlay"""
+def compute_gradcam_overlay(model, img_pil, target_class=None):
+    """
+    Computes authentic Grad-CAM attention attribution from ResNet-50 layer4 feature maps.
+    Calculates gradient-weighted feature activations to localize genuine lesion regions,
+    pericarp cracking margins, or healthy tissue without hardcoded center assumptions.
+    """
     w, h = 224, 224
     img_rgb = img_pil.convert('RGB').resize((w, h))
     img_np = np.array(img_rgb, dtype=np.float32) / 255.0
 
-    # Gaussian attention focus on lesion center
-    np.random.seed(seed_val)
-    cx, cy = np.random.uniform(0.35, 0.65), np.random.uniform(0.35, 0.65)
-    y, x = np.ogrid[:h, :w]
-    dist = ((x - cx * w) ** 2 + (y - cy * h) ** 2) / (2 * (32 ** 2))
-    heatmap = np.exp(-dist)
+    activations = []
+    gradients = []
 
-    # Colormap blending (Jet-like high-contrast thermal)
-    colored_heatmap = np.zeros((h, w, 3), dtype=np.float32)
-    colored_heatmap[:, :, 0] = np.clip(2.0 * heatmap - 0.5, 0, 1)  # Red
-    colored_heatmap[:, :, 1] = np.clip(1.0 - 2.0 * np.abs(heatmap - 0.5), 0, 1)  # Green
-    colored_heatmap[:, :, 2] = np.clip(1.5 - 2.0 * heatmap, 0, 1)  # Blue
+    def forward_hook(module, inp, out):
+        activations.append(out)
 
-    blended = 0.52 * img_np + 0.48 * colored_heatmap
+    def backward_hook(module, grad_in, grad_out):
+        gradients.append(grad_out[0])
+
+    target_layer = model.layer4[-1]
+    h_f = target_layer.register_forward_hook(forward_hook)
+    h_b = target_layer.register_full_backward_hook(backward_hook)
+
+    try:
+        inp = EVAL_TF(img_rgb).unsqueeze(0)
+        inp.requires_grad_(True)
+
+        model.zero_grad()
+        out = model(inp)
+
+        if target_class is None:
+            target_class = int(torch.argmax(out, dim=1).item())
+
+        score = out[0, target_class]
+        score.backward()
+
+        if len(activations) > 0 and len(gradients) > 0:
+            act = activations[0]
+            grad = gradients[0]
+            weights = grad.mean(dim=(2, 3), keepdim=True)
+            cam = torch.relu((weights * act).sum(dim=1)).squeeze(0).detach().numpy()
+
+            cam_min, cam_max = float(cam.min()), float(cam.max())
+            if cam_max > cam_min:
+                cam = (cam - cam_min) / (cam_max - cam_min + 1e-8)
+            else:
+                cam = np.zeros_like(cam)
+        else:
+            cam = np.zeros((7, 7), dtype=np.float32)
+    except Exception as e:
+        print(f"Grad-CAM execution notice: {e}")
+        cam = np.zeros((7, 7), dtype=np.float32)
+    finally:
+        h_f.remove()
+        h_b.remove()
+
+    # Resize CAM to 224x224
+    cam_resized = cv2.resize(cam, (w, h), interpolation=cv2.INTER_CUBIC)
+    cam_resized = np.clip(cam_resized, 0.0, 1.0)
+
+    # For Healthy class, soften heatmap intensity to signify absence of focal pathology
+    if target_class == 0:
+        cam_resized = cam_resized * 0.45
+
+    # Thermal JET colormap
+    heatmap_colored = cv2.applyColorMap(np.uint8(255 * cam_resized), cv2.COLORMAP_JET)
+    heatmap_colored = cv2.cvtColor(heatmap_colored, cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
+
+    # Alpha blend: 55% original image + 45% neural attention map
+    blended = 0.55 * img_np + 0.45 * heatmap_colored
     blended = np.clip(blended, 0.0, 1.0)
     out_pil = Image.fromarray((blended * 255).astype(np.uint8))
 
@@ -236,7 +286,7 @@ class MultiMedRequestHandler(SimpleHTTPRequestHandler):
 
                     organ_label = "Leaf (Foliage)"
                     model_architecture = "Leaf ResNet50 / Swin-B Transformer (E1-L/E2-L)"
-                    leaf_heatmap_b64 = generate_heatmap_overlay(leaf_img, seed_val=hash(pred_class) % 1000)
+                    leaf_heatmap_b64 = compute_gradcam_overlay(LEAF_MODEL, leaf_img, pred_idx)
                     fruit_heatmap_b64 = None
 
                     # Severity proxy for leaf
@@ -270,7 +320,7 @@ class MultiMedRequestHandler(SimpleHTTPRequestHandler):
                     organ_label = "Fruit (Pericarp)"
                     model_architecture = "Fruit ResNet50 / Swin-B Transformer (E1-F/E3-F)"
                     leaf_heatmap_b64 = None
-                    fruit_heatmap_b64 = generate_heatmap_overlay(fruit_img, seed_val=(hash(pred_class) + 88) % 1000)
+                    fruit_heatmap_b64 = compute_gradcam_overlay(FRUIT_MODEL, fruit_img, pred_idx)
 
                     # Severity proxy for fruit
                     if pred_class == "Healthy":
@@ -310,8 +360,8 @@ class MultiMedRequestHandler(SimpleHTTPRequestHandler):
 
                     organ_label = "Dual Multimodal (Leaf + Fruit Aligned)"
                     model_architecture = "Dual Swin-B with Bidirectional Cross-Attention (E7 Proposed)"
-                    leaf_heatmap_b64 = generate_heatmap_overlay(leaf_img, seed_val=hash(pred_class) % 1000)
-                    fruit_heatmap_b64 = generate_heatmap_overlay(fruit_img, seed_val=(hash(pred_class) + 77) % 1000)
+                    leaf_heatmap_b64 = compute_gradcam_overlay(LEAF_MODEL, leaf_img, pred_idx)
+                    fruit_heatmap_b64 = compute_gradcam_overlay(FRUIT_MODEL, fruit_img, pred_idx)
 
                     # Severity proxy
                     if pred_class == "Healthy":
