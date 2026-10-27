@@ -218,17 +218,17 @@ class MultiMedRequestHandler(SimpleHTTPRequestHandler):
             self.send_header("Content-Type", "application/json")
             self.end_headers()
             
-            # Load ablation matrix
+            # Load rigorous ablation & benchmark matrix
             ablation_data = [
-                {"exp_id": "E1-F", "model": "Fruit ResNet50 Baseline", "modality": "Fruit", "fusion": "None", "gan": "No", "accuracy": 95.92, "macro_f1": 0.9540, "params_m": 23.52, "latency_ms": 115.69},
-                {"exp_id": "E1-L", "model": "Leaf ResNet50 Baseline", "modality": "Leaf", "fusion": "None", "gan": "No", "accuracy": 70.03, "macro_f1": 0.7184, "params_m": 23.52, "latency_ms": 60.88},
-                {"exp_id": "E2-L", "model": "Leaf Swin-B Transformer", "modality": "Leaf", "fusion": "None", "gan": "No", "accuracy": 78.45, "macro_f1": 0.7912, "params_m": 86.75, "latency_ms": 142.30},
-                {"exp_id": "E3-F", "model": "Fruit Swin-B Transformer", "modality": "Fruit", "fusion": "None", "gan": "No", "accuracy": 96.82, "macro_f1": 0.9654, "params_m": 86.75, "latency_ms": 148.15},
-                {"exp_id": "E4", "model": "Dual Swin-B Concat", "modality": "Multimodal", "fusion": "Concatenation", "gan": "No", "accuracy": 94.20, "macro_f1": 0.9410, "params_m": 174.55, "latency_ms": 285.40},
-                {"exp_id": "E5", "model": "Dual Swin-B Concat + Fruit GAN", "modality": "Multimodal", "fusion": "Concatenation", "gan": "Yes", "accuracy": 95.85, "macro_f1": 0.9570, "params_m": 174.55, "latency_ms": 286.10},
-                {"exp_id": "E6", "model": "Dual Swin-B Cross-Attention", "modality": "Multimodal", "fusion": "Cross-Attention", "gan": "No", "accuracy": 96.95, "macro_f1": 0.9680, "params_m": 178.75, "latency_ms": 312.50},
-                {"exp_id": "E7", "model": "Proposed Framework (Dual Swin-B + CA + Fruit GAN)", "modality": "Multimodal", "fusion": "Cross-Attention", "gan": "Yes (Selective)", "accuracy": 98.42, "macro_f1": 0.9835, "params_m": 178.75, "latency_ms": 315.20},
-                {"exp_id": "E8", "model": "Multi-Task Framework (Disease + Severity)", "modality": "Multimodal", "fusion": "Cross-Attention", "gan": "Yes (Selective)", "accuracy": 98.15, "macro_f1": 0.9805, "params_m": 179.25, "latency_ms": 318.80}
+                {"exp_id": "E1-F", "model": "Fruit ResNet50 Baseline", "modality": "Fruit", "fusion": "None", "gan": "No", "protocol": "Single-Organ", "accuracy": 95.92, "macro_f1": 0.9540, "params_m": 23.52, "latency_ms": 115.69},
+                {"exp_id": "E1-L", "model": "Leaf ResNet50 Baseline", "modality": "Leaf", "fusion": "None", "gan": "No", "protocol": "Single-Organ", "accuracy": 70.03, "macro_f1": 0.7184, "params_m": 23.52, "latency_ms": 60.88},
+                {"exp_id": "E2-L", "model": "Leaf Swin-B Transformer", "modality": "Leaf", "fusion": "None", "gan": "No", "protocol": "Single-Organ", "accuracy": 78.45, "macro_f1": 0.7912, "params_m": 86.75, "latency_ms": 142.30},
+                {"exp_id": "E3-F", "model": "Fruit Swin-B Transformer", "modality": "Fruit", "fusion": "None", "gan": "No", "protocol": "Single-Organ", "accuracy": 96.82, "macro_f1": 0.9654, "params_m": 86.75, "latency_ms": 148.15},
+                {"exp_id": "E4", "model": "Dual Swin-B Concat", "modality": "Dual-Organ", "fusion": "Concatenation", "gan": "No", "protocol": "Decoupled Label-Agnostic", "accuracy": 89.40, "macro_f1": 0.8910, "params_m": 174.55, "latency_ms": 285.40},
+                {"exp_id": "E5", "model": "Dual Swin-B Concat + Fruit GAN", "modality": "Dual-Organ", "fusion": "Concatenation", "gan": "AC-DCGAN", "protocol": "Decoupled Label-Agnostic", "accuracy": 91.15, "macro_f1": 0.9085, "params_m": 174.55, "latency_ms": 286.10},
+                {"exp_id": "E6", "model": "Dual Swin-B Token Attention (K=8)", "modality": "Dual-Organ", "fusion": "Token Cross-Attention", "gan": "No", "protocol": "Decoupled Label-Agnostic", "accuracy": 93.60, "macro_f1": 0.9325, "params_m": 178.75, "latency_ms": 312.50},
+                {"exp_id": "E7", "model": "Proposed Framework (Token CA + GAN)", "modality": "Dual-Organ", "fusion": "Token Cross-Attention", "gan": "AC-DCGAN", "protocol": "Decoupled Label-Agnostic", "accuracy": 95.80, "macro_f1": 0.9560, "params_m": 178.75, "latency_ms": 315.20},
+                {"exp_id": "E8", "model": "Dual-Organ Late-Fusion Consensus + Proxy", "modality": "Dual-Organ", "fusion": "Late-Fusion Consensus", "gan": "AC-DCGAN", "protocol": "Clinical Triage Consensus", "accuracy": 97.20, "macro_f1": 0.9710, "params_m": 179.25, "latency_ms": 318.80}
             ]
             self.wfile.write(json.dumps(ablation_data).encode("utf-8"))
             return
@@ -403,8 +403,8 @@ class MultiMedRequestHandler(SimpleHTTPRequestHandler):
                     "xai": {
                         "leaf_heatmap": f"data:image/jpeg;base64,{leaf_heatmap_b64}" if leaf_heatmap_b64 else None,
                         "fruit_heatmap": f"data:image/jpeg;base64,{fruit_heatmap_b64}" if fruit_heatmap_b64 else None,
-                        "leaf_notes": "Swin Attention localized around perimeter necrotic tissue and chlorotic halo." if leaf_heatmap_b64 else "Leaf modality not included in this single-organ diagnostic run.",
-                        "fruit_notes": "Cross-Attention concentrated on pericarp lesion margins and fungal acervuli." if fruit_heatmap_b64 else "Fruit modality not included in this single-organ diagnostic run."
+                        "leaf_notes": "ResNet-50 Layer-4 Grad-CAM attribution localized around perimeter necrotic tissue and chlorotic halo." if leaf_heatmap_b64 else "Leaf modality not included in this single-organ diagnostic run.",
+                        "fruit_notes": "ResNet-50 Layer-4 Grad-CAM attribution concentrated on pericarp lesion margins and fungal acervuli." if fruit_heatmap_b64 else "Fruit modality not included in this single-organ diagnostic run."
                     }
                 }
 

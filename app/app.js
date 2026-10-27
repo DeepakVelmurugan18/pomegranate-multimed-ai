@@ -629,7 +629,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Dynamic response generator for fast offline / static Vercel deployment
     function getFallbackResult(mode) {
         let organLabel = "Dual Multimodal (Aligned Leaf + Fruit)";
-        let modelArch = "Dual Swin-B with Cross-Attention (E7 Proposed)";
+        let modelArch = "Dual Swin-B with Token Cross-Attention (E7 Proposed)";
         if (mode === "leaf") {
             organLabel = "Leaf (Foliage)";
             modelArch = "Leaf ResNet50 / Swin-B Transformer (E1-L/E2-L)";
@@ -712,8 +712,8 @@ document.addEventListener("DOMContentLoaded", () => {
             xai: {
                 leaf_heatmap: leafHm,
                 fruit_heatmap: fruitHm,
-                leaf_notes: "Attention activation focused on necrotic lesion borders and chlorotic halos.",
-                fruit_notes: "Cross-Attention concentrated on pericarp rind cracking margins and acervuli."
+                leaf_notes: "Spatial Layer-4 activation focused on necrotic lesion borders and chlorotic halos.",
+                fruit_notes: "Spatial Layer-4 activation concentrated on pericarp rind cracking margins and acervuli."
             }
         };
     }

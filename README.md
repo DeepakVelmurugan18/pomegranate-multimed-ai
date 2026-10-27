@@ -13,7 +13,7 @@ short_description: Multimodal Transformer & XAI Pomegranate Disease Diagnosis
 
 # Pomegranate-MultiMed AI 🌿🍎
 
-An **Explainable Multimodal Transformer Framework with Selective GAN Augmentation for Pomegranate Disease Detection and Severity Assessment** (*Punica granatum L.*).
+A **Dual-Organ Vision Framework for Pomegranate Pathology: Protocol Decoupling, Token Cross-Attention, and Lesion-Burden Proxy Analysis** (*Punica granatum L.*).
 
 [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -22,16 +22,17 @@ An **Explainable Multimodal Transformer Framework with Selective GAN Augmentatio
 
 ## 🎯 Key Capabilities
 
-- **Organ Modality Switcher**:
-  - 🌿 **Dual Multimodal (Aligned Foliage + Pericarp)**: Cross-attention fusion combining leaf and fruit cues.
+- **Organ Modality Switcher & Triage**:
+  - 🌿 **Dual-Organ Mode**: Token-level cross-attention fusion ($K=8$ patch tokens) and late-fusion consensus.
   - 🍃 **Leaf Only**: Foliar pathology diagnosis using trained leaf backbones.
   - 🍎 **Fruit Only**: Pericarp pathology diagnosis using trained fruit backbones.
+- **Leakage-Free Decoupled Evaluation**: Explicit benchmark comparing class-matched oracle upper bounds against unconfounded label-agnostic pairings.
 - **5-Class Disease Taxonomy**:
   - 🟢 Healthy (*Punica granatum L.*)
   - 🍂 Alternaria (*Alternaria alternata*)
   - 🍁 Anthracnose (*Colletotrichum gloeosporioides*)
   - ⚠️ Bacterial Blight (*Xanthomonas axonopodis pv. punicae*)
   - 🔴 Cercospora (*Cercospora punicae*)
-- **Level 3 Lesion-Burden Severity Grading**: Quantitative surface lesion proxy ($S < 10\%$ Low, $10-25\%$ Moderate, $>25\%$ Severe).
-- **Explainable AI (XAI)**: Dual-branch attention attribution heatmaps highlighting necrotic margins.
-- **Phytosanitary PDF Diagnostic Report**: Official laboratory certificate with ICAR/NRCP reporting standards, candidate probability breakdown, agronomic prescriptions, and printable report format.
+- **Objective Lesion-Burden Severity Proxy**: Quantitative surface lesion ratio proxy ($S < 10\%$ Low, $10-25\%$ Moderate, $>25\%$ Severe) calibrated to phytosanitary literature.
+- **Attribution & Pathology Heatmaps**: ResNet-50 Grad-CAM localization highlighting lesion perimeters and pericarp cracking margins.
+- **Phytosanitary PDF Diagnostic Report**: Official laboratory certificate following ICAR/NRCP reporting standards with agronomic prescriptions.

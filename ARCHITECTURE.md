@@ -120,8 +120,18 @@
   2. FID score reported as a comparative quality distribution metric across experiments.
 
 ### D. Multimodal Feature Fusion Strategy
-- **Baseline Fusion (Exp 4-6)**: Concatenation + Projection MLP ($[F_{\text{leaf}} \parallel F_{\text{fruit}}] \to \text{ReLU} \to \text{MLP}$).
-- **Experimental Fusion (Exp 7-8)**: **Cross-Attention Multimodal Fusion** (Leaf Queries attending to Fruit Keys/Values, and vice versa). Cross-Attention will be evaluated as an experimental hypothesis rather than assumed to be superior upfront.
+- **Baseline Fusion (Exp 4-5)**: Feature Concatenation + Projection MLP ($[F_{\text{leaf}} \parallel F_{\text{fruit}}] \to \text{LayerNorm} \to \text{GELU} \to \text{MLP}$).
+- **Non-Degenerate Token-Level Cross-Attention (Exp 6-7)**:
+  Rather than performing cross-attention over global pooled vectors (which reduces degenerate scalar attention to an additive projection), the framework projects 1024-d embeddings into $K=8$ subspace tokens ($X \in \mathbb{R}^{B \times 8 \times 128}$):
+  $$Q_L = X_L W_Q, \quad K_F = X_F W_K, \quad V_F = X_F W_V$$
+  $$\text{Attn}(Q_L, K_F, V_F) = \text{softmax}\left(\frac{Q_L K_F^T}{\sqrt{d_k}}\right) V_F \in \mathbb{R}^{B \times 8 \times 128}$$
+  The $8 \times 8$ cross-attention matrix is computed across 8 distinct keys, generating true entropy-rich attention distributions where foliar lesion tokens attend to pericarp rind tokens.
+- **Decoupled Evaluation Protocol**:
+  To eliminate label-leakage artifacts in unpaired datasets:
+  1. *Coupled Oracle*: Class-matched pairing (evaluates theoretical upper bound).
+  2. *Label-Agnostic Pairing*: Fruit partner assigned with zero label knowledge.
+  3. *Dual-Organ Late Fusion*: Independent inference on available organs combined via calibrated confidence weighting:
+     $$\hat{y} = \text{argmax}\left(w_{\text{leaf}} \cdot P(y \mid X_{\text{leaf}}) + w_{\text{fruit}} \cdot P(y \mid X_{\text{fruit}})\right)$$
 
 ---
 
@@ -129,19 +139,17 @@
 
 ### Disease Classifier Head
 - **Classes**: 5 classes (`Healthy`, `Alternaria`, `Anthracnose`, `Bacterial Blight`, `Cercospora`).
-- **Layers**: Linear($512 \to 128$) $\to$ Dropout(0.3) $\to$ Linear($128 \to 5$) $\to$ Softmax.
+- **Layers**: Linear($2048 \to 512$) $\to$ LayerNorm $\to$ GELU $\to$ Dropout(0.2) $\to$ Linear($512 \to 5$) $\to$ Softmax.
 
-### Severity Estimator Head
-- **Target Tiers**: 3 tiers (`Low`, `Medium`, `High`) evaluated **only on diseased samples**. For `Healthy` samples, Severity output is designated as `N/A`.
-- **Layers**: Linear($512 \to 64$) $\to$ ReLU $\to$ Linear($64 \to 3$) $\to$ Softmax.
+### Objective Lesion-Burden Severity Proxy Head
+- **Target Tiers**: 3 tiers (`Low <10%`, `Medium 10–25%`, `High >25%`) evaluated strictly for diseased samples. For `Healthy` samples, Severity output is designated as `N/A`.
+- **Methodological Status**: Formulated explicitly as an objective surface lesion-burden proxy ($S = A_{\text{lesion}} / A_{\text{total}} \times 100\%$) calibrated to phytosanitary standard area diagrams, rather than unvalidated clinical ground truth.
 
 ---
 
-## 4. Explainable AI (XAI) Framework
+## 4. Pathology Attribution & Diagnostics Framework
 
-1. **Grad-CAM++**: Applied to the final convolutional block of ResNet50 baseline.
-2. **Transformer Attention Rollout**: Aggregates multi-head self-attention maps across Swin Transformer blocks.
-3. **Evaluation Strategy**:
-   - Visual inspection of heatmap alignment over lesion regions.
-   - Qualitative comparison across correct and misclassified samples.
-   - Explanation consistency across leaf and fruit modalities.
+1. **Layer-4 Grad-CAM**: Applied to the final convolutional block of ResNet50 baseline backbones to generate authentic gradient-weighted spatial heatmaps over necrotic perimeters.
+2. **Token Cross-Attention Heatmaps**: Inspects the $(8 \times 8)$ inter-token weight matrix to trace cross-modal feature dependencies.
+3. **Multi-Seed Statistical Reporting**: 3–5 random seed evaluations reporting $\text{Mean} \pm \text{Std}$, 95% Confidence Intervals, and McNemar's significance tests ($p < 0.05$).
+4. **Diagnostic Deliverables**: Normalized confusion matrices, Expected Calibration Error (ECE), and inference latency benchmarks.

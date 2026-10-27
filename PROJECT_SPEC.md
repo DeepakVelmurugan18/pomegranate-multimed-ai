@@ -1,7 +1,7 @@
 # Project Specification: Pomegranate-MultiMed AI
 
 ## Title
-**An Explainable Multimodal Transformer Framework with Selective GAN Augmentation for Pomegranate Disease Detection and Severity Assessment**
+**A Dual-Organ Vision Framework for Pomegranate Pathology: Protocol Decoupling, Token Cross-Attention, and Lesion-Burden Proxy Analysis**
 
 **Short Project Name**: `Pomegranate-MultiMed AI`
 
@@ -10,17 +10,21 @@
 ## 1. Project Vision & Research Objectives
 Plant disease identification is a critical domain in agricultural computer vision. Conventional AI systems rely on a single visual modality (either leaf images or fruit images), which often misses complementary physiological symptoms present across different plant organs. 
 
-**Pomegranate-MultiMed AI** introduces a multimodal deep learning framework combining:
+**Pomegranate-MultiMed AI** introduces a rigorous dual-organ vision framework combining:
 1. Dual visual inputs: **Leaf Images** + **Fruit Images**.
-2. **Selective GAN Augmentation** strictly targeted at minority disease classes in the training set (with documented non-GAN fallback if dataset size is insufficient).
+2. **Selective GAN Augmentation** targeted at minority disease classes in the training set (with explicit FID distribution metrics and class-conditional AC-DCGAN architecture).
 3. **Dual Vision Transformer Branches** (Primary backbone: **Swin-B** for both leaf and fruit branches to ensure controlled cross-modality evaluation).
-4. **Multimodal Feature Fusion** evaluating Feature Concatenation vs Cross-Attention fusion.
-5. **Multi-Task Output**: 5-class disease recognition and 3-tier disease severity estimation for diseased cases.
-6. **Explainable AI (XAI)** visualizations (Grad-CAM++ for CNN baseline, Attention Rollout for Swin Transformer) grounding model predictions in visual pathology.
+4. **Token-Level Cross-Attention Fusion**: Non-degenerate multi-token cross-attention ($K=8$ tokens) evaluated against feature concatenation and late-fusion decision consensus.
+5. **Decoupled Evaluation Protocol**: Exposes and eliminates label-leakage artifacts in unpaired agricultural datasets through label-agnostic and shuffled testing controls.
+6. **Multi-Task Output**: 5-class disease recognition and objective 3-tier surface lesion-burden proxy estimation for diseased cases.
+7. **Multi-Seed Statistical Rigor**: 3–5 random seed evaluations with $\text{Mean} \pm \text{Std}$, 95% Confidence Intervals, and McNemar's significance tests.
 
 ### Primary Research Contribution
-The contribution is **not** claiming GANs or Transformers as novel individual modules. Rather, it lies in the **rigorous integration, controlled unconfounded ablation, and empirical evaluation** of:
-`Selective GAN Augmentation + Dual Swin Transformer Branches + Multimodal Feature Fusion + Disease Classification + Severity Proxy Estimation + Explainable Pathology Mapping`.
+The primary scientific contributions are:
+1. **Multimodal Decoupling Protocol**: Exposing the hidden label-leakage trap in class-aligned multimodal agricultural benchmarks and proposing an unconfounded, label-agnostic evaluation standard.
+2. **Token-Level Bidirectional Cross-Attention**: Formulating true patch-level attention across multi-organ visual tokens, rejecting degenerate pooled-vector projection.
+3. **Dual-Organ Late Fusion / Triage Framework**: Practical, real-world deployment mechanism that operates robustly whether one or both organs are captured in the field.
+4. **Transparent Lesion-Burden Proxy Metric**: Scientifically honest visual surface area ratio with explicit agronomic severity thresholds, avoiding false clinical claims.
 
 ---
 

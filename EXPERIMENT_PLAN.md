@@ -4,26 +4,27 @@
 
 To systematically validate the contribution of every architectural component without confounding variables, the project will execute 8 controlled experiments.
 
-| Exp ID | Experiment Name | Modalities | Architecture Backbone | GAN Strategy | Fusion Method | Severity Head |
+| Exp ID | Experiment Name | Modalities | Architecture Backbone | GAN Strategy | Fusion Method | Evaluation Protocol |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **E1** | CNN Baseline | Leaf (or Fruit) | ResNet50 | None | None | No |
-| **E2** | Leaf Transformer | Leaf Only | Swin-B | None | None | No |
-| **E3** | Fruit Transformer | Fruit Only | Swin-B | None | None | No |
-| **E4** | Multimodal Transformer | Leaf + Fruit | Swin-B | None | Concatenation | No |
-| **E5** | Multimodal + Naive GAN | Leaf + Fruit | Swin-B | Naive GAN (All Classes) | Concatenation | No |
-| **E6** | Multimodal + Selective GAN | Leaf + Fruit | Swin-B | Selective GAN (Minority Only) | Concatenation | No |
-| **E7** | Multimodal + Cross-Attention | Leaf + Fruit | Swin-B | Selective GAN (Minority Only) | **Cross-Attention** | No |
-| **E8** | Proposed Full Framework | Leaf + Fruit | Swin-B | Selective GAN (Minority Only) | **Cross-Attention** | **Yes** (+ XAI) |
+| **E1-L** | Leaf Baseline | Leaf Only | ResNet50 | None | None | Single-Organ |
+| **E1-F** | Fruit Baseline | Fruit Only | ResNet50 | None | None | Single-Organ |
+| **E2-L** | Leaf Transformer | Leaf Only | Swin-B | None | None | Single-Organ |
+| **E3-F** | Fruit Transformer | Fruit Only | Swin-B | None | None | Single-Organ |
+| **E4** | Dual Swin-B Concat | Leaf + Fruit | Swin-B | None | Concatenation | Coupled + Label-Agnostic |
+| **E5** | Dual Swin-B Concat + GAN | Leaf + Fruit | Swin-B | AC-DCGAN (Minority) | Concatenation | Coupled + Label-Agnostic |
+| **E6** | Dual Swin-B Token Attention | Leaf + Fruit | Swin-B | None | **Token Cross-Attn ($K=8$)** | Coupled + Label-Agnostic |
+| **E7** | Proposed Framework | Leaf + Fruit | Swin-B | AC-DCGAN (Minority) | **Token Cross-Attn ($K=8$)** | Coupled + Label-Agnostic |
+| **E8** | Dual-Organ Late Fusion & Proxy | Leaf + Fruit | Swin-B | AC-DCGAN (Minority) | **Late-Fusion Consensus** | **Decoupled + Lesion Proxy** |
 
 ---
 
 ## 2. Research Questions Answered by Ablation Matrix
 
-- **Q1 (Multimodal Value)**: Does combining Leaf + Fruit (E4) outperform single-modality Leaf (E2) or Fruit (E3) Transformers?
-- **Q2 (GAN Augmentation Impact)**: Does adding GAN data augmentation (E5) improve baseline multimodal performance (E4)?
-- **Q3 (Selective vs Indiscriminate GAN)**: Does targeting GAN augmentation strictly at minority classes (E6) outperform indiscriminate all-class GAN synthesis (E5)?
-- **Q4 (Fusion Strategy Evaluation)**: Does Cross-Attention multimodal fusion (E7) outperform simple Concatenation fusion (E6)?
-- **Q5 (Multi-Task Severity Impact)**: How does adding a joint severity estimation head (E8) affect primary disease classification performance relative to single-task E7?
+- **Q1 (Single-Organ Disparity)**: Why does foliar diagnosis ($70-78\%$) trail pericarp diagnosis ($96\%$), and does visual symptom overlap explain foliar errors?
+- **Q2 (Label Leakage Vulnerability)**: What is the empirical performance drop when test pairs switch from class-matched oracle pairs to unlabelled/label-agnostic pairs?
+- **Q3 (Token Cross-Attention vs Concatenation)**: Does non-degenerate token cross-attention ($K=8$) outperform feature concatenation under unconfounded evaluation?
+- **Q4 (GAN Utility Isolation)**: Does AC-DCGAN augmentation improve fruit minority classes specifically, and does it transfer to leaf-assisted fusion?
+- **Q5 (Early Fusion vs Late-Fusion Consensus)**: Does end-to-end token cross-attention outperform practical late-fusion decision consensus when deploying in field clinical settings?
 
 ---
 
